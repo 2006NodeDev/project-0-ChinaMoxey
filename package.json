@@ -1,0 +1,21 @@
+{
+  "name": "funding",
+  "version": "1.0.0",
+  "description": "Creating a reimbursement system API",
+  "main": "index.ts",
+
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2006NodeDev/project-0-ChinaMoxey.git"
+  },
+  "author": "China Moxey",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/2006NodeDev/project-0-ChinaMoxey/issues"
+  },
+  "homepage": "https://github.com/2006NodeDev/project-0-ChinaMoxey#readme"
+}
