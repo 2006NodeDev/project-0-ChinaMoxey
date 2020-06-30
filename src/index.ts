@@ -2,15 +2,33 @@ import express, {Request, Response,NextFunction } from 'express'
 import {User} from './models/User'
 //import {HttpError} from './errors/HttpError'
 import { InputError } from './errors/InputError';
+import { LoginError } from './errors/LoginError';
 const app = express(); // calling express function
 
-app.get('/user',(req:Request,res:Response)=>{
+app.get('/users',(req:Request,res:Response)=>{
     res.json(users);
 })
+app.post('/login',(req:Request,res:Response)=>{
+    console.log(req.body)
+    let{
+        userId,
+        username,
+        password,
+        firstName,
+        lastName,
+        email,
+        role} = req.body
 
+        if(username && password){
+            users.push({userId,username,password,firstName,lastName,email,role})
+            res.sendStatus(201);
+        }else{
+            throw new LoginError();
+        }
+})
 app.use(express.json())//middleware 
 
- app.post('/user',(req:Request,res:Response)=>{
+ app.post('/users',(req:Request,res:Response)=>{
      console.log(req.body);
      let {userId,
         username,
