@@ -4,13 +4,13 @@ import {Request, Response, NextFunction} from 'express'
         return(req:Request,res:Response,next:NextFunction)=> {
             let allowed = false
                 for(const role of roles){
-                    if(req.session.user.role === role){
+                    if(req.session.user.role.role === role){
                         allowed = true
                         next()
                     }
                 }
                 if(!allowed){
-                    res.status(403).send('You dont have the proper permissions for this endpoint')
+                    res.status(403).send('You dont have permissions for this endpoint')
                 }
         }
     }
