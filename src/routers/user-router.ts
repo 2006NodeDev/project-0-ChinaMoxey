@@ -46,7 +46,7 @@ userRouter.get('/',(req:Request,res:Response)=>{
     }
     }
  })
- let users:User[] = [{
+ export let users:User[] = [{
     userId: 1,
     username: "monsterkiller123",
     password: "password",
