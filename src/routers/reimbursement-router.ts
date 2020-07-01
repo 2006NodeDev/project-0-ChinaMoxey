@@ -25,6 +25,7 @@ reimbursementRouter.post('/',(req:Request,res:Response) =>{
     if(reimbursementId && author && amount && dateSubmitted && dateResolved && description && resolver && status && type){
         reimbursements.push({reimbursementId,author,amount,dateSubmitted,dateResolved,description,resolver,status,type})
         res.sendStatus(201)
+        found = true
     }else{
         if(!found){
             throw new reimbursementInputError()
@@ -51,10 +52,28 @@ reimbursementRouter.get('/author/userId/:userId',(req:Request,res:Response)=> {
     }
   
 })
+reimbursementRouter.get('/status/:statusId',(req:Request,res:Response)=>{
+    let {id} = req.params
+    if(isNaN(+id)){
+        throw new reimbursementInputError()
+    }else{
+        let found = false
+        for(const reimbursement of reimbursements){
+            if(reimbursement.status === +id){
+                res.json(reimbursement)
+                found = true
+            }
+            if(!found){
+                throw new reimbursementNotFound()
+            }
+
+        }
+    }
+})
 
 
 let reimbursements:Reimbursement[] =[{
-    reimbursementId: 1,
+    reimbursementId:1,
     author: 21,
     amount: 10,
     dateSubmitted: 4,
