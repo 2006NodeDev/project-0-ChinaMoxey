@@ -1,10 +1,10 @@
-import express, { Response, Request } from 'express'
-import { userRouter,users } from './routers/user-router';
+import express, { Response, Request, NextFunction } from 'express'
+import { userRouter} from './routers/user-router';
 import { loggingMiddleware } from './middleware/logging-middleware';
 import { reimbursementRouter } from './routers/reimbursement-router';
 import {LoginError} from './errors/LoginError'
 import { sessionMiddleware } from './middleware/session-middleware';
-import { AuthenticationFailure } from './errors/AuthenticationFailure';
+import { getUsernameAndPassword } from './daos/user-daos';
 const app = express(); // calling express function
 
 
@@ -17,26 +17,19 @@ app.use(sessionMiddleware)// custom middleware for session
 app.use('/users',userRouter) //user router 
 app.use('/reimbursements',reimbursementRouter) // reimbursement router
 
-app.post('/login',(req:Request,res:Response) =>{
+app.post('/login',async (req:Request,res:Response,next:NextFunction) =>{
     let username = req.body.username
     let password = req.body.password
-    
+
         if(!username || !password){
             throw new LoginError()
         }else{
-            let found = false
-            for(const user of users){
-                if(user.username === username && user.password === password){
-
-                    req.session.user = user
-                    res.json(user)
-                    found = true
-
-                }
-
-            }
-            if(!found){
-                throw new AuthenticationFailure()
+            try{
+                let user = await getUsernameAndPassword(username, password)
+                req.session.user = user
+                res.json(user)
+            }catch(e){
+                next(e)
             }
         }
 })
