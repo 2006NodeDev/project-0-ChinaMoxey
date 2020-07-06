@@ -44,7 +44,7 @@ app.post('/login',async (req:Request,res:Response,next:NextFunction) =>{
     }
  })
 //listening at port 2006
-app.listen(2006, () =>{
+app.listen(1998, () =>{
     console.log('Started Server');
 });
 

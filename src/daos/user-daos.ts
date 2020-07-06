@@ -3,7 +3,9 @@ import {connectionPool} from "."
 import {User} from '../models/User'
 import { UserNotFoundError } from '../errors/UserNotFoundError'
 import {UserDTOConvertor} from '../utils/UserDTOConventor'
+import { InputError } from '../errors/InputError'
 
+//get all users
 export async function getAllUsers():Promise<User[]>{
     let client:PoolClient
     try{
@@ -25,6 +27,7 @@ export async function getAllUsers():Promise<User[]>{
         client && client.release()
     }
 } 
+//getting by username and password
 export async function getUsernameAndPassword(username:string, password:string):Promise<User>{
     let client: PoolClient
     try {
@@ -54,6 +57,7 @@ export async function getUsernameAndPassword(username:string, password:string):P
         client && client.release()
     }
 }
+//get by user id
 export async function getUserById(id: number):Promise<User> {
     let client: PoolClient
     try {
@@ -87,24 +91,58 @@ export async function getUserById(id: number):Promise<User> {
 }
 export async function UserUpdate(updatedUser:User):Promise<User>{
     let client:PoolClient
-    try{
+    try {
         client = await connectionPool.connect()
+        await client.query('BEGIN;')
 
-        await client.query(`expensereimbursementsystem.users 
-                            set "username" = $1, 
-                            "password" = $2, 
-                            "firstName" = $3, 
-                            "lastName" = $4, 
-                            "email" = $5, 
-                            "role" = $6
-                            where userId = $7 returning "userId" `,
-                            [updatedUser.username, updatedUser.password, updatedUser.firstName, updatedUser.lastName, updatedUser.email, updatedUser.role.role_id, updatedUser.userId])
-        return getUserById(updatedUser.userId);
+        if(updatedUser.username) {
+            await client.query(`update expensereimbursementsystem.users set "username" = $1 
+                                    where "userId" = $2;`, 
+                                    [updatedUser.username, updatedUser.userId])
+        }
+        if(updatedUser.password) {
+            await client.query(`update expensereimbursementsystem.users set "password" = $1 
+                                    where "userId" = $2;`, 
+                                    [updatedUser.password, updatedUser.userId])
+        }
+        if(updatedUser.firstName) {
+            await client.query(`update expensereimbursementsystem.users set "firstName" = $1 
+                                    where "userId" = $2;`, 
+                                    [updatedUser.firstName, updatedUser.userId])
+        }
+        if(updatedUser.lastName) {
+            await client.query(`update expensereimbursementsystem.users set "lastName" = $1 
+                                    where "userId" = $2;`, 
+                                    [updatedUser.lastName, updatedUser.userId])
+        }
+        if(updatedUser.email) {
+            await client.query(`update expensereimbursementsystem.users set "email" = $1 
+                                    where "userId" = $2;`, 
+                                    [updatedUser.email, updatedUser.userId])
+        }
+        if(updatedUser.role) {
+            let roleId = await client.query(`select r."role_id" from expensereimbursementsystem.roles r 
+                                        where r."role" = $1`,
+                                        [updatedUser.role])
+            if(roleId.rowCount === 0) {
+                throw new Error('Role Not Found')
+            }
+            roleId = roleId.rows[0].role_id
+            await client.query(`update expensereimbursementsystem.users set "role" = $1 
+                                    where "userId" = $2;`, 
+                                    [roleId, updatedUser.userId])
+        }
 
-    }catch(e){
-        console.log(e)
-        throw new Error('Unhandled Error Occured')
-    }finally{
-        client && client.release();
+        await client.query('COMMIT;')
+        return updatedUser
+    } catch (e) {
+        client && client.query('ROLLBACK;')
+        if(e.message === 'Role Not Found') {
+            throw new InputError()
+        }
+        console.log(e);
+        throw new Error('Unknown Error Occurred')
+    } finally {
+        client && client.release()
     }
 }
